@@ -16,3 +16,35 @@
 - name: Configure timezone
   timezone:
     name: Asia/Singapore
+
+- name: Ensure SSM Agent is running
+  service:
+    name: amazon-ssm-agent
+    state: started
+    enabled: yes
+  ignore_errors: true
+
+- name: "Alternative: Start SSM Agent via snap if service name differs"
+  service:
+    name: snap.amazon-ssm-agent.amazon-ssm-agent
+    state: started
+    enabled: yes
+  ignore_errors: true
+
+- name: Check SSM Agent status
+  command: systemctl status amazon-ssm-agent || systemctl status snap.amazon-ssm-agent.amazon-ssm-agent
+  register: ssm_status
+  failed_when: false
+
+- name: Display SSM Agent status
+  debug:
+    msg: "SSM Agent status: {{ ssm_status.stdout | default('Service not found') }}"
+
+- name: Verify SSM Agent is running
+  command: systemctl status amazon-ssm-agent
+  register: ssm_status
+  failed_when: false
+
+- name: Show SSM Agent status
+  debug:
+    msg: "SSM Agent status: {{ ssm_status.stdout | default('Not available') }}"

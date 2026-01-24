@@ -25,20 +25,84 @@ ansible/
 
 ## Prerequisites
 
-1. SSH access to all servers (keys should be configured)
+1. AWS CLI configured with proper credentials
 2. Ansible installed on your local machine
-3. AWS infrastructure deployed via Terraform
+3. Required Ansible collections installed (see Setup below)
+4. AWS infrastructure deployed via Terraform
+5. SSM permissions for your AWS user/role
+6. SSM Agent will be automatically installed/started by Ansible common role
+
+## Setup
+
+### 1. Install Required Ansible Collections
+
+**⚠️ REQUIRED: Install collections before proceeding**
+
+```bash
+# Install required collections
+ansible-galaxy collection install -r requirements.yml
+
+# Or install individually (amazon.aws is REQUIRED for SSM)
+ansible-galaxy collection install amazon.aws
+ansible-galaxy collection install community.docker
+```
+
+**Without amazon.aws collection, you'll get: `"the connection plugin 'ssm' was not found"`**
+
+### 2. Configure AWS Credentials
+
+Ensure your AWS credentials are configured:
+
+```bash
+aws configure
+# or set environment variables:
+# export AWS_ACCESS_KEY_ID=your-key
+# export AWS_SECRET_ACCESS_KEY=your-secret
+# export AWS_DEFAULT_REGION=ap-southeast-1
+```
+
+### 3. Verify SSM Access
+
+Test SSM access to your instances:
+
+```bash
+# List SSM-managed instances
+aws ssm describe-instance-information --query 'InstanceInformationList[*].InstanceId'
+```
 
 ## Usage
 
-### 1. Configure SSH Access
-
-Ensure you can SSH to all servers without password prompts:
+### 1. Install Collections (REQUIRED)
 
 ```bash
-ssh ubuntu@<web-server-public-ip>
-ssh ubuntu@<ansible-controller-private-ip>
-ssh ubuntu@<monitoring-server-private-ip>
+ansible-galaxy collection install amazon.aws community.docker
+```
+
+### 2. Verify SSM Connectivity
+
+Test SSM connectivity to all servers:
+
+```bash
+# Test connection to web server
+ansible webservers -m ping
+
+# Test connection to ansible controller
+ansible ansible_controller -m ping
+
+# Test connection to monitoring server
+ansible monitoring_servers -m ping
+```
+
+### 3. Test Playbook Syntax (Optional)
+
+Before deploying to production, test playbook syntax locally:
+
+```bash
+# Test playbook syntax with local connections
+ansible-playbook -i inventory.test.ini --syntax-check playbook.yml
+
+# Test with local execution (for role validation)
+ansible-playbook -i inventory.test.ini --connection=local playbook.yml
 ```
 
 ### 2. Test Connectivity
@@ -71,9 +135,9 @@ ansible-playbook playbook.yml --tags monitoring
 
 ## What Gets Configured
 
-- **Common**: Updates packages, installs essentials on all servers
+- **Common**: Updates packages, installs essentials + ensures SSM Agent is running on all servers
 - **Docker**: Installs Docker Engine and Compose on all servers
-- **Webapp**: Deploys the application from GitHub as Docker container
+- **Webapp**: Deploys the application from ECR as Docker container
 - **Monitoring**: Sets up Prometheus and Grafana stack
 
 ## Access URLs (after deployment)
@@ -84,7 +148,33 @@ ansible-playbook playbook.yml --tags monitoring
 
 ## Troubleshooting
 
-1. Check SSH connectivity: `ansible all -m ping`
-2. View detailed output: `ansible-playbook playbook.yml -v`
-3. Run specific tasks: `ansible-playbook playbook.yml --step`
-4. Check logs: Check `/var/log/cloud-init-output.log` on servers
+### SSM Issues
+
+**"the connection plugin 'ssm' was not found"**
+- **Solution**: Install amazon.aws collection: `ansible-galaxy collection install amazon.aws`
+
+**SSM connections fail / Agent not responding**
+- **Solution**: SSM Agent is installed and started automatically by the common role
+- **Verify**: Check agent status: `aws ssm describe-instance-information`
+
+1. Check SSM connectivity: `ansible all -m ping`
+2. Verify AWS credentials: `aws sts get-caller-identity`
+3. Check SSM agent status: `aws ssm describe-instance-information`
+4. View detailed output: `ansible-playbook playbook.yml -v`
+5. Run specific tasks: `ansible-playbook playbook.yml --step`
+6. Check logs: Check `/var/log/cloud-init-output.log` on servers
+
+### SSM Connection Issues
+
+If SSM connections fail:
+
+```bash
+# Check if instances are registered with SSM
+aws ssm describe-instance-information --query 'InstanceInformationList[*].[InstanceId,ComputerName,PingStatus]'
+
+# Test SSM session manually
+aws ssm start-session --target <instance-id>
+
+# Verify IAM permissions for SSM
+aws iam list-attached-user-policies --user-name <username>
+```
