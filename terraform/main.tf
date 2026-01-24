@@ -99,3 +99,17 @@ resource "aws_route_table_association" "private_assoc" {
   subnet_id      = aws_subnet.private_subnet.id
   route_table_id = aws_route_table.private_rt.id
 }
+
+# ECR repository for container images
+resource "aws_ecr_repository" "final_project" {
+  name                 = "devops-bootcamp/final-project-robin"
+  image_tag_mutability = "MUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+
+  tags = {
+    Name = "devops-bootcamp-ecr"
+  }
+}
