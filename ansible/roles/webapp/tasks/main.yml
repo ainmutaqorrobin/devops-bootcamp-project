@@ -1,0 +1,50 @@
+---
+- name: Create application directory
+  file:
+    path: /opt/my-devops-project
+    state: directory
+    owner: ubuntu
+    group: ubuntu
+    mode: '0755'
+
+- name: Clone application repository
+  git:
+    repo: https://github.com/Infratify/lab-final-project
+    dest: /opt/my-devops-project
+    version: main
+    update: yes
+  become_user: ubuntu
+
+- name: Check if Dockerfile exists
+  stat:
+    path: /opt/my-devops-project/Dockerfile
+  register: dockerfile_check
+
+- name: Build Docker image (only if Dockerfile exists)
+  community.docker.docker_image:
+    name: my-devops-project
+    source: build
+    build:
+      path: /opt/my-devops-project
+      dockerfile: Dockerfile
+    state: present
+  when: dockerfile_check.stat.exists
+
+- name: Stop existing container if running
+  community.docker.docker_container:
+    name: my-devops-project
+    state: absent
+  ignore_errors: yes
+
+- name: Run web application container
+  community.docker.docker_container:
+    name: my-devops-project
+    image: my-devops-project:latest
+    state: started
+    restart_policy: always
+    ports:
+      - "80:80"
+    env:
+      NODE_ENV: production
+    container_default_behavior: compatibility
+  when: dockerfile_check.stat.exists
