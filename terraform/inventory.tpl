@@ -2,14 +2,16 @@
 # Do not edit manually - run 'terraform apply' to update
 
 [webservers]
-${web_server_instance_id} ansible_connection=ssm ansible_user=ubuntu
+${web_server_ip} ansible_connection=ssh ansible_user=ubuntu
 
 [ansible_controller]
-${ansible_controller_instance_id} ansible_connection=ssm ansible_user=ubuntu
+${ansible_controller_ip} ansible_connection=ssh ansible_user=ubuntu ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -i ${ssh_private_key} -o StrictHostKeyChecking=no ubuntu@${web_server_ip}"'
 
 [monitoring_servers]
-${monitoring_server_instance_id} ansible_connection=ssm ansible_user=ubuntu
+${monitoring_server_ip} ansible_connection=ssh ansible_user=ubuntu ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -i ${ssh_private_key} -o StrictHostKeyChecking=no ubuntu@${web_server_ip}"'
 
 [all:vars]
+ansible_user=ubuntu
+ansible_ssh_private_key_file=${ssh_private_key}
 ansible_python_interpreter=/usr/bin/python3
 ecr_repository_uri=${ecr_repository_uri}

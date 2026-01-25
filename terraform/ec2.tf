@@ -53,6 +53,7 @@ resource "aws_instance" "web_server" {
   vpc_security_group_ids      = [aws_security_group.public_sg.id]
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.ec2_ssm_profile.name
+  key_name                    = aws_key_pair.ansible.key_name
 
   tags = {
     Name = "devops-web-server"
@@ -77,6 +78,7 @@ resource "aws_instance" "ansible_controller" {
   private_ip             = "10.0.0.135"
   vpc_security_group_ids = [aws_security_group.private_sg.id]
   iam_instance_profile   = aws_iam_instance_profile.ec2_ssm_profile.name
+  key_name               = aws_key_pair.ansible.key_name
 
   tags = {
     Name = "devops-ansible-controller"
@@ -91,6 +93,7 @@ resource "aws_instance" "monitoring_server" {
   private_ip             = "10.0.0.136"
   vpc_security_group_ids = [aws_security_group.private_sg.id]
   iam_instance_profile   = aws_iam_instance_profile.ec2_ssm_profile.name
+  key_name               = aws_key_pair.ansible.key_name
 
   tags = {
     Name = "devops-monitoring-server"

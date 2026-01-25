@@ -3,13 +3,11 @@
 resource "local_file" "ansible_inventory" {
   filename = "${path.module}/../ansible/inventory.ini"
   content = templatefile("${path.module}/inventory.tpl", {
-    web_server_ip       = aws_eip.web_eip.public_ip
-    ansible_controller_ip = aws_instance.ansible_controller.private_ip
-    monitoring_server_ip = aws_instance.monitoring_server.private_ip
-    web_server_instance_id = aws_instance.web_server.id
-    ansible_controller_instance_id = aws_instance.ansible_controller.id
-    monitoring_server_instance_id = aws_instance.monitoring_server.id
-    ecr_repository_uri   = aws_ecr_repository.final_project.repository_url
+    web_server_ip          = aws_eip.web_eip.public_ip
+    ansible_controller_ip  = aws_instance.ansible_controller.private_ip
+    monitoring_server_ip   = aws_instance.monitoring_server.private_ip
+    ssh_private_key        = "${path.module}/../ansible/ansible-key.pem"
+    ecr_repository_uri     = aws_ecr_repository.final_project.repository_url
   })
 
   depends_on = [
@@ -17,6 +15,7 @@ resource "local_file" "ansible_inventory" {
     aws_instance.ansible_controller,
     aws_instance.monitoring_server,
     aws_eip.web_eip,
+    local_file.private_key_pem,
   ]
 }
 
@@ -37,17 +36,17 @@ output "monitoring_server_private_ip" {
 }
 
 output "web_server_instance_id" {
-  description = "Instance ID of the web server for SSM connection"
+  description = "Instance ID of the web server"
   value       = aws_instance.web_server.id
 }
 
 output "ansible_controller_instance_id" {
-  description = "Instance ID of the Ansible controller for SSM connection"
+  description = "Instance ID of the Ansible controller"
   value       = aws_instance.ansible_controller.id
 }
 
 output "monitoring_server_instance_id" {
-  description = "Instance ID of the monitoring server for SSM connection"
+  description = "Instance ID of the monitoring server"
   value       = aws_instance.monitoring_server.id
 }
 
