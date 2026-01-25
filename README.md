@@ -75,9 +75,12 @@ No extra secrets are needed for Pages.
 
 **Setup (optional):**
 
-1. Create an IAM role for GitHub Actions (OIDC with `token.actions.githubusercontent.com`).
-2. Grant that role access to ECR (e.g. `AmazonEC2ContainerRegistryFullAccess` or a custom ECR policy).
-3. Add a repository secret: **`AWS_ROLE_ARN`** = that role’s ARN.
+1. Create an IAM user (or use an existing one) with programmatic access.
+2. Grant that user access to ECR (e.g. `AmazonEC2ContainerRegistryFullAccess` or a custom ECR policy).
+3. Create access keys for the user.
+4. Add two repository secrets:
+   - **`AWS_ACCESS_KEY_ID`** = your access key ID
+   - **`AWS_SECRET_ACCESS_KEY`** = your secret access key
 
 To **deploy** the new image on the web server (pull and run), run the Ansible playbook after a push (see [ansible/README.md](ansible/README.md)).
 

@@ -53,23 +53,25 @@ No GitHub secrets are required.
 **Steps:**
 
 1. Checkout repo.
-2. Configure AWS credentials (OIDC).
+2. Configure AWS credentials (using access keys).
 3. Log in to ECR.
 4. Clone app repo (e.g. `https://github.com/Infratify/lab-final-project`) into `app/` if missing.
 5. Build Docker image.
 6. Tag and push to ECR (`devops-bootcamp/final-project-robin`, region `ap-southeast-1`).
 
-**Required secret:**
+**Required secrets:**
 
-- **`AWS_ROLE_ARN`:** IAM role ARN used by GitHub Actions (OIDC).
+- **`AWS_ACCESS_KEY_ID`:** AWS IAM user access key ID
+- **`AWS_SECRET_ACCESS_KEY`:** AWS IAM user secret access key
 
 **IAM setup (summary):**
 
-1. Create an OIDC identity provider for `https://token.actions.githubusercontent.com` (if needed).
-2. Create an IAM role that:
-   - Is trusted by the GitHub OIDC provider for this repo.
-   - Has permissions to push (and pull) images in the ECR repository above (e.g. `AmazonEC2ContainerRegistryFullAccess` or a scoped policy).
-3. Put the role ARN into **Settings → Secrets and variables → Actions** as **`AWS_ROLE_ARN`**.
+1. Create an IAM user (or use an existing one) with programmatic access.
+2. Attach a policy that allows ECR push/pull (e.g. `AmazonEC2ContainerRegistryFullAccess` or a custom ECR policy).
+3. Create access keys for the user.
+4. Add both secrets to **Settings → Secrets and variables → Actions**:
+   - **`AWS_ACCESS_KEY_ID`** = your access key ID
+   - **`AWS_SECRET_ACCESS_KEY`** = your secret access key
 
 ---
 
@@ -91,7 +93,7 @@ That playbook connects to the web server, pulls the image from ECR, and runs the
 | Item                       | Required | Workflow                   | Secrets     |
 |----------------------------|----------|----------------------------|-------------|
 | GitHub Pages documentation | ✅ Yes   | `github-pages.yml`         | None        |
-| Docker build + push to ECR | Bonus    | `docker-build-push.yml`    | `AWS_ROLE_ARN` |
+| Docker build + push to ECR | Bonus    | `docker-build-push.yml`    | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` |
 | Pull & run on web server   | Bonus    | Ansible (manual / your automation) | —           |
 
 ---
@@ -101,4 +103,4 @@ That playbook connects to the web server, pulls the image from ECR, and runs the
 - [GitHub Pages](https://docs.github.com/en/pages)
 - [GitHub Actions](https://docs.github.com/en/actions)
 - [AWS ECR](https://docs.aws.amazon.com/ecr/)
-- [OIDC with GitHub and AWS](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services)
+- [AWS IAM Users](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_users.html)
