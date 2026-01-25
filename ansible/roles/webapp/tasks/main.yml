@@ -10,6 +10,8 @@
     name: "{{ ecr_repository_uri }}:latest"
     source: pull
     state: present
+  ignore_errors: yes
+  register: ecr_pull
 
 - name: Run web application container from ECR
   community.docker.docker_container:
@@ -22,3 +24,5 @@
     env:
       NODE_ENV: production
     container_default_behavior: compatibility
+  when: ecr_pull is succeeded
+  ignore_errors: yes

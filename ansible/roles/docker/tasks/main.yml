@@ -16,7 +16,7 @@
 
 - name: Add Docker repository
   apt_repository:
-    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
+    repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_facts['distribution_release'] }} stable"
     state: present
 
 - name: Update package cache
@@ -43,3 +43,17 @@
     name: ubuntu
     groups: docker
     append: yes
+
+- name: Add ssm-user to docker group (for SSM Session Manager sessions)
+  user:
+    name: ssm-user
+    groups: docker
+    append: yes
+  ignore_errors: yes
+
+- name: Ensure docker is in PATH for all users (SSM sessions use minimal PATH)
+  file:
+    src: /usr/bin/docker
+    dest: /usr/local/bin/docker
+    state: link
+    force: yes
