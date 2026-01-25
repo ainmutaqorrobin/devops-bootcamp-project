@@ -71,7 +71,7 @@ No extra secrets are needed for Pages.
 
 - **Workflow:** `.github/workflows/docker-build-push.yml`
 - **Purpose:** Build the app image, push it to AWS ECR.
-- **Triggers:** Pushes to `main`/`master` (when `app/`, `Dockerfile`, or the workflow changes) or manual run.
+- **Triggers:** Pushes to `master` (when `app/`, `Dockerfile`, or the workflow changes) or manual run.
 
 **Setup (optional):**
 

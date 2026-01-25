@@ -17,7 +17,7 @@ CI/CD is implemented with **GitHub Actions** and covers:
 
 **Triggers:**
 
-- Push to `main` or `master` when `README.md` or the workflow file changes.
+- Push to `master` when `README.md` or the workflow file changes.
 - Manual run via **Actions → Deploy GitHub Pages → Run workflow**.
 
 **Steps:**
@@ -47,7 +47,7 @@ No GitHub secrets are required.
 
 **Triggers:**
 
-- Push to `main` or `master` when `app/`, `Dockerfile`, or the workflow change.
+- Push to `master` when `app/`, `Dockerfile`, or the workflow change.
 - Manual run (**Actions → Build and Push Docker Image to ECR → Run workflow**), with optional image tag.
 
 **Steps:**
