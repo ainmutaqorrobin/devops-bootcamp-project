@@ -11,7 +11,52 @@
       - vim
       - htop
       - net-tools
+      - unzip
     state: present
+
+- name: Check if AWS CLI is already installed
+  command: aws --version
+  register: aws_cli_check
+  failed_when: false
+  changed_when: false
+
+- name: Download AWS CLI v2 installer
+  get_url:
+    url: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
+    dest: /tmp/awscliv2.zip
+    mode: '0644'
+  when: aws_cli_check.rc != 0
+
+- name: Unzip AWS CLI installer
+  unarchive:
+    src: /tmp/awscliv2.zip
+    dest: /tmp
+    remote_src: yes
+  when: aws_cli_check.rc != 0
+
+- name: Install AWS CLI v2
+  command: /tmp/aws/install
+  args:
+    creates: /usr/local/bin/aws
+  when: aws_cli_check.rc != 0
+
+- name: Clean up AWS CLI installer files
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /tmp/awscliv2.zip
+    - /tmp/aws
+  when: aws_cli_check.rc != 0
+
+- name: Verify AWS CLI installation
+  command: aws --version
+  register: aws_cli_version
+  changed_when: false
+
+- name: Display AWS CLI version
+  debug:
+    msg: "AWS CLI installed: {{ aws_cli_version.stdout }}"
 
 - name: Configure timezone
   timezone:
